@@ -1968,7 +1968,8 @@ TypePointer TupleType::closestTemporaryType(TypePointer const& _targetType) cons
 
 FunctionType::FunctionType(FunctionDefinition const& _function, bool _isInternal):
 	m_location(_isInternal ? Location::Internal : Location::External),
-	m_isConstant(_function.isDeclaredConst()),
+	m_isView(_function.isView()),
+	m_isPure(_function.isPure()),
 	m_isPayable(_isInternal ? false : _function.isPayable()),
 	m_declaration(&_function)
 {
@@ -1998,7 +1999,7 @@ FunctionType::FunctionType(FunctionDefinition const& _function, bool _isInternal
 }
 
 FunctionType::FunctionType(VariableDeclaration const& _varDecl):
-	m_location(Location::External), m_isConstant(true), m_declaration(&_varDecl)
+	m_location(Location::External), m_isView(true), m_declaration(&_varDecl)
 {
 	TypePointers paramTypes;
 	vector<string> paramNames;
@@ -2058,7 +2059,7 @@ FunctionType::FunctionType(VariableDeclaration const& _varDecl):
 }
 
 FunctionType::FunctionType(EventDefinition const& _event):
-	m_location(Location::Event), m_isConstant(true), m_declaration(&_event)
+	m_location(Location::Event), m_isView(true), m_declaration(&_event)
 {
 	TypePointers params;
 	vector<string> paramNames;
@@ -2205,7 +2206,9 @@ bool FunctionType::operator==(Type const& _other) const
 
 	if (m_location != other.m_location)
 		return false;
-	if (m_isConstant != other.isConstant())
+	if (m_isView != other.isView())
+		return false;
+	if (m_isPure != other.isPure())
 		return false;
 
 	if (m_parameterTypes.size() != other.m_parameterTypes.size() ||
@@ -2261,6 +2264,10 @@ string FunctionType::toString(bool _short) const
 	name += ")";
 	if (m_isConstant)
 		name += " constant";
+	if (m_isView)
+		name += " view";
+	if (m_isPure)
+		name += " pure";
 	if (m_isPayable)
 		name += " payable";
 	if (m_location == Location::External)
@@ -2363,7 +2370,7 @@ FunctionTypePointer FunctionType::interfaceFunctionType() const
 		paramTypes, retParamTypes,
 		m_parameterNames, m_returnParameterNames,
 		m_location, m_arbitraryParameters,
-		m_declaration, m_isConstant, m_isPayable
+		m_declaration, m_isView, m_isPure, m_isPayable
 	);
 }
 
@@ -2519,7 +2526,7 @@ u256 FunctionType::externalIdentifier() const
 
 bool FunctionType::isPure() const
 {
-	return
+	return  m_isPure ||
 		m_location == Location::SHA3 ||
 		m_location == Location::ECRecover ||
 		m_location == Location::SHA256 ||
@@ -2548,7 +2555,8 @@ TypePointer FunctionType::copyAndSetGasOrValue(bool _setGas, bool _setValue) con
 		m_location,
 		m_arbitraryParameters,
 		m_declaration,
-		m_isConstant,
+		m_isView,
+		m_isPure,
 		m_isPayable,
 		m_gasSet || _setGas,
 		m_valueSet || _setValue,
@@ -2598,7 +2606,8 @@ FunctionTypePointer FunctionType::asMemberFunction(bool _inLibrary, bool _bound)
 		location,
 		m_arbitraryParameters,
 		m_declaration,
-		m_isConstant,
+		m_isView,
+		m_isPure,
 		m_isPayable,
 		m_gasSet,
 		m_valueSet,
