@@ -58,22 +58,19 @@ using namespace dev::solidity;
 CompilerStack::CompilerStack(ReadFileCallback const& _readFile):
 	m_readFile(_readFile), m_parseSuccessful(false) {}
 
-bool CompilerStack::compileStandardJSON(string const& _input)
+string CompilerStack::compileStandardJSON(string const& _input)
 {
 	reset(false);
 
 	Json::Value input;
 	if (!Json::Reader().parse(_input, input, false))
 	{
-		auto err = make_shared<Error>(Error::Type::InputError);
-		*err <<
-			errinfo_comment("Error parsing standardized input.");
-		m_errors.push_back(std::move(err));
-		return false;
+		return "{\"errors\":\"[{\"type\":\"InputError\",\"component\":\"general\",\"severity\":\"error\",\"message\":\"Error parsing input JSON.\"}]}";
 	}
+
 	Json::Value const& sources = input["sources"];
 	for (auto const& sourceName: sources.getMemberNames())
-		addSource(sourceName, sources[sourceName].asString());
+		addSource(sourceName, sources[sourceName]["content"].asString());
 
 	Json::Value const& settings = input["settings"];
 
@@ -108,7 +105,7 @@ bool CompilerStack::compileStandardJSON(string const& _input)
 	// only extract documentation
 	// only extract list of all contracts / libraries
 
-	return false;
+	return "";
 }
 
 void CompilerStack::setRemappings(vector<string> const& _remappings)
@@ -139,8 +136,11 @@ void CompilerStack::reset(bool _keepSources)
 	{
 		m_sources.clear();
 	}
+	m_libraries.clear();
+	m_remappings.clear();
 	m_optimize = false;
 	m_optimizeRuns = 200;
+	m_metadataLiteralSources = false;
 	m_globalContext.reset();
 	m_scopes.clear();
 	m_sourceOrder.clear();
