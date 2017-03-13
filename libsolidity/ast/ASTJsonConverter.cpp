@@ -184,7 +184,20 @@ bool ASTJsonConverter::visit(FunctionDefinition const& _node)
 bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 {
 	//2DO: use isIndexed only when inside event signature
-	//make_pair("isIndexed", _node.isIndexed()),
+	//inEvent ? make_pair("isIndexed", _node.isIndexed()) : ??? ,
+	if (inEvent)
+	//if (true)
+	{
+	addJsonNode(_node, "VariableDeclaration", {
+		make_pair("name", _node.name()),
+		make_pair("isIndexed", _node.isIndexed()),
+		make_pair("type", type(_node)),
+		make_pair("constant", _node.isConstant()),
+		make_pair("storageLocation", location(_node.referenceLocation())),
+		make_pair("visibility", visibility(_node.visibility()))
+	}, true);
+	} else
+	{
 	addJsonNode(_node, "VariableDeclaration", {
 		make_pair("name", _node.name()),
 		make_pair("type", type(_node)),
@@ -192,6 +205,7 @@ bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 		make_pair("storageLocation", location(_node.referenceLocation())),
 		make_pair("visibility", visibility(_node.visibility()))
 	}, true);
+	} 
 	return true;
 }
 
@@ -214,6 +228,7 @@ bool ASTJsonConverter::visit(TypeName const&)
 
 bool ASTJsonConverter::visit(EventDefinition const& _node)
 {
+	inEvent = true; //flag for adding isIndexed 2 variable declarations
 	addJsonNode(_node, "EventDefinition", { make_pair("name", _node.name()) }, true);
 	return true;
 }
@@ -507,6 +522,7 @@ void ASTJsonConverter::endVisit(ModifierInvocation const&)
 
 void ASTJsonConverter::endVisit(EventDefinition const&)
 {
+	inEvent = false;
 	goUp();
 }
 
