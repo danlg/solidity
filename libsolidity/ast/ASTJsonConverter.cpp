@@ -183,13 +183,13 @@ bool ASTJsonConverter::visit(FunctionDefinition const& _node)
 
 bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 {
+	//2DO: use isIndexed only when inside event signature
+	//make_pair("isIndexed", _node.isIndexed()),
 	addJsonNode(_node, "VariableDeclaration", {
 		make_pair("name", _node.name()),
 		make_pair("type", type(_node)),
-		make_pair("isIndexed", _node.isIndexed()),
-		//make_pair("isStateVariable", _node.isStateVar()),
-		make_pair("isConstant", _node.isConstant()),
-		make_pair("location", location(_node.referenceLocation())),
+		make_pair("constant", _node.isConstant()),
+		make_pair("storageLocation", location(_node.referenceLocation())),
 		make_pair("visibility", visibility(_node.visibility()))
 	}, true);
 	return true;
@@ -675,7 +675,7 @@ string ASTJsonConverter::visibility(Declaration::Visibility const& _visibility)
 	}
 }
 
-string ASTJsonConverter::location( int const& _location)
+/*string ASTJsonConverter::location( int const& _location)
 {
 	switch (_location)
 	{
@@ -688,9 +688,22 @@ string ASTJsonConverter::location( int const& _location)
 	default:
 		BOOST_THROW_EXCEPTION(InternalCompilerError() << errinfo_comment("Unknown declaration location."));
 	}
+}*/
+string ASTJsonConverter::location( VariableDeclaration::Location const& _location)
+{
+	switch (_location)
+	{
+	case VariableDeclaration::Location::Default:
+		return "default";
+	case VariableDeclaration::Location::Storage:
+		return "storage";
+	case VariableDeclaration::Location::Memory:
+		return "memory";
+	default:
+		BOOST_THROW_EXCEPTION(InternalCompilerError() << errinfo_comment("Unknown declaration location."));
+	}
 }
-/*
- * */
+
 string ASTJsonConverter::type(Expression const& _expression)
 {
 	return _expression.annotation().type ? _expression.annotation().type->toString() : "Unknown";

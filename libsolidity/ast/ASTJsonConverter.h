@@ -153,7 +153,8 @@ private:
 	);
 	std::string sourceLocationToString(SourceLocation const& _location) const;
 	std::string visibility(Declaration::Visibility const& _visibility);
-	std::string location(int const& _location);
+	//std::string location(int const& _location);
+	std::string location(VariableDeclaration::Location const& _location);
 	std::string type(Expression const& _expression);
 	std::string type(VariableDeclaration const& _varDecl);
 	inline void goUp()
