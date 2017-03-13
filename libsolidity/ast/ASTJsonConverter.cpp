@@ -185,7 +185,12 @@ bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 {
 	addJsonNode(_node, "VariableDeclaration", {
 		make_pair("name", _node.name()),
-		make_pair("type", type(_node))
+		make_pair("type", type(_node)),
+		make_pair("isIndexed", _node.isIndexed()),
+		//make_pair("isStateVariable", _node.isStateVar()),
+		make_pair("isConstant", _node.isConstant()),
+		make_pair("location", location(_node.referenceLocation())),
+		make_pair("visibility", visibility(_node.visibility()))
 	}, true);
 	return true;
 }
@@ -670,6 +675,22 @@ string ASTJsonConverter::visibility(Declaration::Visibility const& _visibility)
 	}
 }
 
+string ASTJsonConverter::location( int const& _location)
+{
+	switch (_location)
+	{
+	case 0:
+		return "default";
+	case 1:  
+		return "storage";
+	case 2:
+		return "memory";
+	default:
+		BOOST_THROW_EXCEPTION(InternalCompilerError() << errinfo_comment("Unknown declaration location."));
+	}
+}
+/*
+ * */
 string ASTJsonConverter::type(Expression const& _expression)
 {
 	return _expression.annotation().type ? _expression.annotation().type->toString() : "Unknown";
