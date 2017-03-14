@@ -40,6 +40,19 @@ void ASTJsonConverter::addJsonNode(
 	bool _hasChildren = false
 )
 {
+  ASTJsonConverter::addJsonNode( _node,
+                                 _nodeName,
+                                 std::vector<pair<string const, Json::Value const>>(_attributes),
+                                   _hasChildren);
+}
+  
+void ASTJsonConverter::addJsonNode(
+	ASTNode const& _node,
+	string const& _nodeName,
+	std::vector<pair<string const, Json::Value const>> _attributes,
+	bool _hasChildren = false
+)
+{
 	Json::Value node;
 
 	node["id"] = Json::UInt64(_node.id());
@@ -183,30 +196,20 @@ bool ASTJsonConverter::visit(FunctionDefinition const& _node)
 
 bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 {
-	//2DO: use isIndexed only when inside event signature
-	//inEvent ? make_pair("isIndexed", _node.isIndexed()) : ??? ,
+	std::vector<pair<string const, Json::Value const>> attributes = {
+                make_pair("name", _node.name()),
+		make_pair("type", type(_node)),
+		make_pair("constant", _node.isConstant()),
+		make_pair("storageLocation", location(_node.referenceLocation())),
+		make_pair("visibility", visibility(_node.visibility()))
+        };
 	if (inEvent)
-	//if (true)
-	{
-	addJsonNode(_node, "VariableDeclaration", {
-		make_pair("name", _node.name()),
-		make_pair("isIndexed", _node.isIndexed()),
-		make_pair("type", type(_node)),
-		make_pair("constant", _node.isConstant()),
-		make_pair("storageLocation", location(_node.referenceLocation())),
-		make_pair("visibility", visibility(_node.visibility()))
-	}, true);
-	} else
-	{
-	addJsonNode(_node, "VariableDeclaration", {
-		make_pair("name", _node.name()),
-		make_pair("type", type(_node)),
-		make_pair("constant", _node.isConstant()),
-		make_pair("storageLocation", location(_node.referenceLocation())),
-		make_pair("visibility", visibility(_node.visibility()))
-	}, true);
-	} 
+          {
+            attributes.push_back(make_pair("isIndexed", _node.isIndexed()));
+          }
+	addJsonNode(_node, "VariableDeclaration", attributes, true);
 	return true;
+
 }
 
 bool ASTJsonConverter::visit(ModifierDefinition const& _node)
