@@ -40,16 +40,18 @@ void ASTJsonConverter::addJsonNode(
 	bool _hasChildren = false
 )
 {
-  ASTJsonConverter::addJsonNode( _node,
-                                 _nodeName,
-                                 std::vector<pair<string const, Json::Value const>>(_attributes),
-                                   _hasChildren);
+	ASTJsonConverter::addJsonNode(
+		_node,
+                _nodeName,
+                std::vector<pair<string const, Json::Value const>>(_attributes),
+                _hasChildren
+	);
 }
   
 void ASTJsonConverter::addJsonNode(
 	ASTNode const& _node,
 	string const& _nodeName,
-	std::vector<pair<string const, Json::Value const>> _attributes,
+	std::vector<pair<string const, Json::Value const>> const& _attributes,
 	bool _hasChildren = false
 )
 {
@@ -203,10 +205,7 @@ bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 		make_pair("storageLocation", location(_node.referenceLocation())),
 		make_pair("visibility", visibility(_node.visibility()))
         };
-	if (inEvent)
-          {
-            attributes.push_back(make_pair("isIndexed", _node.isIndexed()));
-          }
+	if (m_inEvent) attributes.push_back(make_pair("isIndexed", _node.isIndexed()));
 	addJsonNode(_node, "VariableDeclaration", attributes, true);
 	return true;
 
@@ -231,7 +230,7 @@ bool ASTJsonConverter::visit(TypeName const&)
 
 bool ASTJsonConverter::visit(EventDefinition const& _node)
 {
-	inEvent = true; //flag for adding isIndexed 2 variable declarations
+	m_inEvent = true; //flag for adding isIndexed to variable declarations
 	addJsonNode(_node, "EventDefinition", { make_pair("name", _node.name()) }, true);
 	return true;
 }
@@ -525,7 +524,7 @@ void ASTJsonConverter::endVisit(ModifierInvocation const&)
 
 void ASTJsonConverter::endVisit(EventDefinition const&)
 {
-	inEvent = false;
+	m_inEvent = false;
 	goUp();
 }
 
@@ -694,21 +693,7 @@ string ASTJsonConverter::visibility(Declaration::Visibility const& _visibility)
 	}
 }
 
-/*string ASTJsonConverter::location( int const& _location)
-{
-	switch (_location)
-	{
-	case 0:
-		return "default";
-	case 1:  
-		return "storage";
-	case 2:
-		return "memory";
-	default:
-		BOOST_THROW_EXCEPTION(InternalCompilerError() << errinfo_comment("Unknown declaration location."));
-	}
-}*/
-string ASTJsonConverter::location( VariableDeclaration::Location const& _location)
+string ASTJsonConverter::location( VariableDeclaration::Location _location)
 {
 	switch (_location)
 	{
