@@ -131,7 +131,17 @@ bool ASTJsonConverter::visit(PragmaDirective const& _node)
 
 bool ASTJsonConverter::visit(ImportDirective const& _node)
 {
-	addJsonNode(_node, "ImportDirective", { make_pair("file", _node.path())});
+	Json::Value symbolAliases(Json::objectValue);
+	for (auto const& symbolAlias: _node.symbolAliases())
+        	symbolAliases.append()        //??: how to cast symbolAlias[0] and symbolAlias[1] to a pair that i can append to json::objectValue?
+        //another concern I am having is that these could be partiall or completely nil
+            
+	addJsonNode(_node, "ImportDirective", {
+        	make_pair("file", _node.path()),
+                  make_pair("absolutePath", _node.annotation().absolutePath)
+                  //make_pair("SourceUnit", _node.annotation().sourceUnit),  // this just translates to 'true', how
+                  //make_pair("symbolAliases", symbolAliases) //see above
+	});
 	return true;
 }
 
