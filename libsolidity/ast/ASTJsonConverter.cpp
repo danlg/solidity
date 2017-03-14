@@ -199,10 +199,10 @@ bool ASTJsonConverter::visit(FunctionDefinition const& _node)
 bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 {
 	std::vector<pair<string const, Json::Value const>> attributes = {
-                make_pair("name", _node.name()),
+        	make_pair("name", _node.name()),
 		make_pair("type", type(_node)),
 		make_pair("constant", _node.isConstant()),
-		make_pair("storageLocation", location(_node.referenceLocation())),
+                make_pair("storageLocation", location(_node.referenceLocation())),
 		make_pair("visibility", visibility(_node.visibility()))
         };
 	if (m_inEvent) attributes.push_back(make_pair("isIndexed", _node.isIndexed()));
