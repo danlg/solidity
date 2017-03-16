@@ -63,6 +63,7 @@ for (var filename of process.argv.slice(2))
             for (var contractName in result['contracts'])
             {
                 console.log(contractName + ' ' + result['contracts'][contractName].bytecode)
+                console.log(contractName + ' ' + result['contracts'][contractName].metadata)
             }
         }
     }
@@ -74,9 +75,9 @@ EOF
         for f in *.sol
         do
             # Run solc and feed it into a very crude json "parser"
-            $REPO_ROOT/build/solc/solc --combined-json bin "$f" 2>/dev/null | \
-                sed -e 's/}/\n/g' | grep '"bin"' |
-                sed -e 's/.*"\([^"]*\)":{"bin":"\([^"]*\)".*/\1 \2/' \
+            $REPO_ROOT/build/solc/solc --combined-json bin,metadata "$f" 2>/dev/null #| \
+#                sed -e 's/}/\n/g' | grep '"bin"' |
+#                sed -e 's/.*"\([^"]*\)":{"bin":"\([^"]*\)".*/\1 \2/' \
                  >> report.txt || true
         done
     fi
